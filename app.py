@@ -121,6 +121,15 @@ for k, v in defaults.items():
     if k not in st.session_state:
         st.session_state[k] = v
 
+# Auto-load API key from Streamlit Cloud secrets (if configured)
+# Set this at: share.streamlit.io → your app → Settings → Secrets
+# Add:  ANTHROPIC_API_KEY = "sk-ant-..."
+if not st.session_state.api_key:
+    try:
+        st.session_state.api_key = st.secrets["ANTHROPIC_API_KEY"]
+    except Exception:
+        pass  # Not deployed to Streamlit Cloud, or secret not set yet
+
 
 # ════════════════════════════════════════════════════════════════
 # HEADER
@@ -136,15 +145,21 @@ st.markdown("---")
 # ════════════════════════════════════════════════════════════════
 if not st.session_state.audit_done:
 
-    st.markdown('<p class="api-label">Anthropic API Key</p>', unsafe_allow_html=True)
-    api_key_input = st.text_input(
-        "api_key_field",
-        value=st.session_state.api_key,
-        placeholder="sk-ant-api03-...",
-        type="password",
-        label_visibility="collapsed",
-    )
-    st.caption("Your key is never stored. Get one free at console.anthropic.com")
+    # Only show API key field if not already loaded from secrets
+    key_from_secrets = bool(st.session_state.api_key)
+    if key_from_secrets:
+        api_key_input = st.session_state.api_key
+        st.success("✓ API key loaded from secure settings", icon="🔒")
+    else:
+        st.markdown('<p class="api-label">Anthropic API Key</p>', unsafe_allow_html=True)
+        api_key_input = st.text_input(
+            "api_key_field",
+            value=st.session_state.api_key,
+            placeholder="sk-ant-api03-...",
+            type="password",
+            label_visibility="collapsed",
+        )
+        st.caption("Get a free key at console.anthropic.com — or save it permanently in app Settings")
 
     st.markdown("<br/>", unsafe_allow_html=True)
     st.markdown('<p class="api-label">Website to Audit</p>', unsafe_allow_html=True)
@@ -161,6 +176,34 @@ if not st.session_state.audit_done:
 
     st.caption("Works on any publicly accessible website")
 
+    # ── Competitor Settings (expander) ────────────────────────
+    st.markdown("<br/>", unsafe_allow_html=True)
+    with st.expander("⚙️ Competitor Settings (optional but recommended)"):
+        st.markdown("""
+        <p style='font-size:0.85rem; color:#7a7060; margin-bottom:0.5rem;'>
+        Tell AuditAI what industry this client is in and who their real competitors are.
+        This overrides the auto-detection and produces a much more accurate competitive landscape.
+        </p>
+        """, unsafe_allow_html=True)
+
+        st.markdown('<p class="api-label">Industry / Business Type</p>', unsafe_allow_html=True)
+        manual_biz_type = st.text_input(
+            "biz_type_field",
+            placeholder="e.g. TDIU vocational consulting, medical spa, dental practice...",
+            label_visibility="collapsed",
+        )
+        st.caption("Describe the industry in a few words — be specific")
+
+        st.markdown("<br/>", unsafe_allow_html=True)
+        st.markdown('<p class="api-label">Known Competitors (one URL per line, up to 5)</p>', unsafe_allow_html=True)
+        competitor_text = st.text_area(
+            "competitors_field",
+            placeholder="tdiuexpert.com\nvocexpertservices.com\noasinc.org",
+            height=130,
+            label_visibility="collapsed",
+        )
+        st.caption("Paste their domains — Claude will research and rank each one for you")
+
     if st.session_state.error_msg:
         st.error(st.session_state.error_msg)
         st.session_state.error_msg = ""
@@ -174,6 +217,12 @@ if not st.session_state.audit_done:
         else:
             st.session_state.api_key = api_key_input.strip()
             domain = domain_input.strip()
+            # Parse manual competitor URLs
+            manual_competitors = []
+            if competitor_text.strip():
+                manual_competitors = [u.strip() for u in competitor_text.strip().splitlines() if u.strip()][:5]
+            st.session_state["manual_biz_type"]    = manual_biz_type.strip()
+            st.session_state["manual_competitors"] = manual_competitors
 
             st.markdown("---")
             st.markdown(f"### Auditing `{domain}`")
@@ -213,7 +262,13 @@ if not st.session_state.audit_done:
                     render_agents()
 
             try:
-                audit_data = run_real_audit(domain, st.session_state.api_key, progress_callback)
+                audit_data = run_real_audit(
+                    domain,
+                    st.session_state.api_key,
+                    progress_callback,
+                    manual_biz_type=st.session_state.get("manual_biz_type", ""),
+                    manual_competitors=st.session_state.get("manual_competitors", []),
+                )
 
                 # Mark all done
                 while len(completed) < len(agents):

@@ -1,0 +1,8 @@
+# Never commit secrets or generated files
+.streamlit/secrets.toml
+reports/
+__pycache__/
+*.pyc
+*.pyo
+.env
+.DS_Store

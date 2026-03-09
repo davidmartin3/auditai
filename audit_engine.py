@@ -4,7 +4,7 @@ Scrapes any URL, finds REAL competitors via Google, verifies each URL,
 then uses Claude API to produce genuine audit data.
 """
 
-VERSION = "10"  # ← Update this whenever you install a new version
+VERSION = "12"  # ← Update this whenever you install a new version
 
 import json
 import re
@@ -726,7 +726,7 @@ Your analysis must be specific to the actual website content provided — never 
 Always base findings on real signals from the scraped content."""
 
 
-def run_real_audit(domain: str, api_key: str, progress_callback=None) -> dict:
+def run_real_audit(domain: str, api_key: str, progress_callback=None, manual_biz_type: str = "", manual_competitors: list = None) -> dict:
     def update(msg):
         if progress_callback:
             progress_callback(msg)
@@ -747,7 +747,11 @@ def run_real_audit(domain: str, api_key: str, progress_callback=None) -> dict:
 
     # Simple keyword-based business type detection
     biz_type = "business"
-    if any(w in all_text for w in ["botox","filler","medspa","med spa","aesthetics","laser","skincare"]):
+    # IMPORTANT: more specific checks must come BEFORE generic ones
+    # e.g. "tdiu vocational" must be checked before generic "consulting"
+    if any(w in all_text for w in ["tdiu","unemployability","va benefit","va claim","veteran vocational","vocational evaluation","service-connected"]):
+        biz_type = "tdiu vocational"
+    elif any(w in all_text for w in ["botox","filler","medspa","med spa","aesthetics","laser","skincare"]):
         biz_type = "medical spa aesthetics"
     elif any(w in all_text for w in ["attorney","lawyer","law firm","legal"]):
         biz_type = "law firm"
@@ -765,7 +769,7 @@ def run_real_audit(domain: str, api_key: str, progress_callback=None) -> dict:
         biz_type = "physical therapy or chiropractic"
     elif any(w in all_text for w in ["financial","advisor","wealth","investment","insurance"]):
         biz_type = "financial advisory"
-    elif any(w in all_text for w in ["vocational","expert","consulting","consultant"]):
+    elif any(w in all_text for w in ["vocational","consultant","consulting"]):
         biz_type = "consulting"
     elif any(w in all_text for w in ["salon","hair","nail","spa","beauty"]):
         biz_type = "hair or beauty salon"
@@ -785,28 +789,87 @@ def run_real_audit(domain: str, api_key: str, progress_callback=None) -> dict:
     if not location:
         location = "United States"
 
+    # ── Manual overrides from UI ──────────────────────────────
+    # If user supplied industry keywords, use those instead of auto-detection
+    if manual_biz_type and manual_biz_type.strip():
+        biz_type = manual_biz_type.strip().lower()
+
     # ── 3. Find real competitors ─────────────────────────────
-    # Priority 1: curated known competitor database (fastest, most accurate)
-    update("Looking up industry competitors...")
-    verified_competitors = get_known_competitors(biz_type, clean_domain)
+    if manual_competitors:
+        # User supplied their own competitor URLs — use them directly
+        update("Using your competitor list...")
+        verified_competitors = []
+        for url in manual_competitors:
+            url = url.strip()
+            if not url:
+                continue
+            if not url.startswith("http"):
+                url = "https://" + url
+            name = url.replace("https://","").replace("http://","").replace("www.","").rstrip("/").split(".")[0].replace("-"," ").replace("_"," ").title()
+            verified_competitors.append({
+                "name":           name,
+                "url":            url,
+                "tier":           "Direct",
+                "threat":         "HIGH",
+                "reviews":        0,
+                "specialization": "",
+                "differentiator": "",
+                "serves":         "",
+                "reach":          "",
+                "weakness":       "",
+            })
+        # Ask Claude to enrich the competitor intelligence
+        if verified_competitors:
+            update("Claude is researching your competitors...")
+            enrich_prompt = f"""For each competitor below, return a JSON array with enriched intelligence fields.
+Business type: {biz_type}
+Client domain: {clean_domain}
 
-    # Priority 2: live Google search to supplement or replace
-    if len(verified_competitors) < 3:
-        update("Searching web for local competitors...")
-        raw_competitors = search_real_competitors(biz_type, location, clean_domain)
-        if raw_competitors:
-            update(f"Verifying {len(raw_competitors)} competitor URLs...")
-            google_competitors = classify_competitors(raw_competitors, biz_type, api_key)
-            # Merge: add Google results that aren't already in known list
-            known_urls = {c["url"] for c in verified_competitors}
-            for c in google_competitors:
-                if c["url"] not in known_urls:
-                    verified_competitors.append(c)
+Competitors to enrich:
+{json.dumps([{"name": c["name"], "url": c["url"]} for c in verified_competitors], indent=2)}
 
-    # Priority 3: Claude fallback if still empty
-    if not verified_competitors:
-        update("Using AI competitor research...")
-        verified_competitors = claude_competitor_fallback(biz_type, location, clean_domain, api_key)
+For each, return:
+- name (keep as-is)
+- url (keep as-is)  
+- tier: "Direct", "Indirect", or "Aspirational"
+- threat: "HIGH", "MED", or "LOW"
+- reviews: estimated number of online reviews (integer)
+- specialization: what they focus on (1 sentence)
+- differentiator: their key competitive advantage (1 sentence)
+- serves: who their target client is (1 sentence)
+- reach: geographic reach (e.g. "National", "Regional", "Local")
+- weakness: their biggest exploitable weakness (1 sentence)
+
+Return ONLY a JSON array, no other text."""
+            try:
+                raw = call_claude(api_key, "You are a competitive intelligence analyst. Return only valid JSON arrays.", enrich_prompt)
+                raw = raw.strip().lstrip("```json").lstrip("```").rstrip("```").strip()
+                enriched = json.loads(raw)
+                if isinstance(enriched, list) and len(enriched) > 0:
+                    verified_competitors = enriched
+            except Exception:
+                pass  # keep unenriched version if Claude fails
+    else:
+        # Priority 1: curated known competitor database (fastest, most accurate)
+        update("Looking up industry competitors...")
+        verified_competitors = get_known_competitors(biz_type, clean_domain)
+
+        # Priority 2: live Google search to supplement or replace
+        if len(verified_competitors) < 3:
+            update("Searching web for local competitors...")
+            raw_competitors = search_real_competitors(biz_type, location, clean_domain)
+            if raw_competitors:
+                update(f"Verifying {len(raw_competitors)} competitor URLs...")
+                google_competitors = classify_competitors(raw_competitors, biz_type, api_key)
+                known_urls = {c["url"] for c in verified_competitors}
+                for c in google_competitors:
+                    if c["url"] not in known_urls:
+                        verified_competitors.append(c)
+
+        # Priority 3: Claude fallback if still empty
+        if not verified_competitors:
+            update("Using AI competitor research...")
+            verified_competitors = claude_competitor_fallback(biz_type, location, clean_domain, api_key)
 
     verified_competitors = verified_competitors[:5]  # cap at 5
 
