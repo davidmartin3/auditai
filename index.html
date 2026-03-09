@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AuditAI — Local Marketing Intelligence Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #0a0a0a;
+      --paper: #f5f0e8;
+      --cream: #ede8dc;
+      --rust: #c84b2f;
+      --rust-light: #e8623f;
+      --sage: #4a6741;
+      --gold: #c9a227;
+      --muted: #7a7060;
+      --border: #d4cfc3;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Syne', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 3rem;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--paper);
+      z-index: 100;
+    }
+
+    .logo {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.5rem;
+      letter-spacing: -0.02em;
+    }
+
+    .logo span { color: var(--rust); font-style: italic; }
+
+    nav ul {
+      list-style: none;
+      display: flex;
+      gap: 2.5rem;
+    }
+
+    nav a {
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    nav a:hover { color: var(--ink); }
+
+    .nav-cta {
+      background: var(--ink) !important;
+      color: var(--paper) !important;
+      padding: 0.6rem 1.4rem;
+      border-radius: 2px;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      min-height: 88vh;
+      gap: 0;
+    }
+
+    .hero-left {
+      padding: 5rem 3rem 4rem 3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      border-right: 1px solid var(--border);
+    }
+
+    .eyebrow {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--rust);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .eyebrow::before {
+      content: '';
+      display: block;
+      width: 2rem;
+      height: 1px;
+      background: var(--rust);
+    }
+
+    h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(3rem, 5vw, 4.8rem);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 2rem;
+    }
+
+    h1 em {
+      font-style: italic;
+      color: var(--rust);
+    }
+
+    .hero-desc {
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--muted);
+      max-width: 440px;
+      margin-bottom: 2.5rem;
+    }
+
+    .btn-group { display: flex; gap: 1rem; align-items: center; }
+
+    .btn-primary {
+      background: var(--rust);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.88rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: background 0.2s, transform 0.15s;
+    }
+
+    .btn-primary:hover {
+      background: var(--rust-light);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1.5px solid var(--border);
+      color: var(--ink);
+      padding: 1rem 2rem;
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 0.88rem;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: border-color 0.2s;
+    }
+
+    .btn-secondary:hover { border-color: var(--ink); }
+
+    .hero-right {
+      background: var(--cream);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Terminal mockup */
+    .terminal {
+      background: #111;
+      border-radius: 6px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+
+    .terminal-bar {
+      background: #2a2a2a;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot-r { background: #ff5f56; }
+    .dot-y { background: #ffbd2e; }
+    .dot-g { background: #27c93f; }
+
+    .terminal-title {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      color: #666;
+      margin-left: 0.5rem;
+    }
+
+    .terminal-body {
+      padding: 1.5rem;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      line-height: 1.8;
+      color: #ccc;
+    }
+
+    .t-prompt { color: #27c93f; }
+    .t-cmd { color: #fff; }
+    .t-comment { color: #555; }
+    .t-success { color: #27c93f; }
+    .t-warn { color: #ffbd2e; }
+    .t-agent { color: #7aa2f7; }
+    .t-score { color: var(--rust); font-weight: 500; }
+
+    .t-cursor {
+      display: inline-block;
+      width: 8px;
+      height: 14px;
+      background: #ccc;
+      animation: blink 1.1s step-end infinite;
+      vertical-align: middle;
+    }
+
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+    /* ── COMPARISON TABLE ── */
+    .section { padding: 5rem 3rem; }
+    .section-label {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .section h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      letter-spacing: -0.02em;
+      margin-bottom: 3rem;
+    }
+
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+
+    .compare-table th {
+      text-align: left;
+      padding: 1rem 1.5rem;
+      border-bottom: 2px solid var(--ink);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+    }
+
+    .compare-table th:nth-child(2) { color: var(--muted); }
+    .compare-table th:nth-child(3) { color: var(--rust); }
+
+    .compare-table td {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .compare-table tr:hover td { background: var(--cream); }
+
+    .compare-table td:first-child {
+      font-weight: 600;
+      font-size: 0.82rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 2px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+    }
+
+    .pill-good { background: #d4ead1; color: var(--sage); }
+    .pill-bad { background: #f5ddd9; color: #9b3a25; }
+
+    /* ── AUDIT FLOW ── */
+    .audit-section {
+      background: var(--cream);
+      padding: 5rem 3rem;
+    }
+
+    .agents-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin: 3rem 0;
+    }
+
+    .agent-card {
+      background: var(--paper);
+      padding: 2rem 1.5rem;
+      position: relative;
+    }
+
+    .agent-number {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .agent-icon {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .agent-name {
+      font-weight: 700;
+      font-size: 0.88rem;
+      margin-bottom: 0.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .agent-desc {
+      font-size: 0.78rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .agent-card::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 1.5rem;
+      right: 1.5rem;
+      height: 2px;
+      background: var(--rust);
+      transform: scaleX(0);
+      transition: transform 0.3s;
+      transform-origin: left;
+    }
+
+    .agent-card:hover::after { transform: scaleX(1); }
+
+    /* ── REPORT PREVIEW ── */
+    .report-section {
+      padding: 5rem 3rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    .score-card {
+      background: var(--ink);
+      color: var(--paper);
+      padding: 2.5rem;
+      border-radius: 4px;
+    }
+
+    .score-card h3 {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #666;
+      margin-bottom: 1.5rem;
+    }
+
+    .score-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      border-bottom: 1px solid #222;
+    }
+
+    .score-label {
+      font-size: 0.88rem;
+      color: #aaa;
+    }
+
+    .score-value {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2rem;
+      color: var(--paper);
+    }
+
+    .score-value.low { color: var(--rust); }
+    .score-value.med { color: var(--gold); }
+    .score-value.high { color: #27c93f; }
+
+    .score-bar {
+      height: 3px;
+      background: #222;
+      border-radius: 2px;
+      margin-top: 0.5rem;
+      overflow: hidden;
+    }
+
+    .score-fill {
+      height: 100%;
+      background: var(--rust);
+      border-radius: 2px;
+      transition: width 1.5s ease;
+    }
+
+    .report-text h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(1.8rem, 3vw, 2.6rem);
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+    }
+
+    .report-text p {
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
+    }
+
+    .finding {
+      background: var(--cream);
+      border-left: 3px solid var(--rust);
+      padding: 1rem 1.2rem;
+      margin: 0.75rem 0;
+      font-size: 0.88rem;
+    }
+
+    .finding strong { display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--rust); margin-bottom: 0.25rem; }
+
+    /* ── PRICING ── */
+    .pricing-section {
+      background: var(--ink);
+      color: var(--paper);
+      padding: 5rem 3rem;
+      text-align: center;
+    }
+
+    .pricing-section h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(2rem, 3.5vw, 3rem);
+      margin-bottom: 1rem;
+    }
+
+    .pricing-section p {
+      color: #888;
+      margin-bottom: 3rem;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: #333;
+      max-width: 900px;
+      margin: 0 auto 3rem;
+      border: 1px solid #333;
+    }
+
+    .price-card {
+      background: #111;
+      padding: 2.5rem 2rem;
+      text-align: left;
+    }
+
+    .price-card.featured {
+      background: var(--rust);
+    }
+
+    .price-tier {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 1rem;
+    }
+
+    .price-card.featured .price-tier { color: rgba(255,255,255,0.7); }
+
+    .price-amount {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.5rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .price-sub {
+      font-size: 0.78rem;
+      color: #666;
+      margin-bottom: 2rem;
+    }
+
+    .price-card.featured .price-sub { color: rgba(255,255,255,0.6); }
+
+    .price-features { list-style: none; }
+    .price-features li {
+      font-size: 0.85rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #222;
+      color: #ccc;
+    }
+
+    .price-card.featured .price-features li { border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.9); }
+
+    .price-features li::before { content: '→ '; color: var(--rust); }
+    .price-card.featured .price-features li::before { color: white; }
+
+    /* ── AUDIT FORM ── */
+    .audit-form-section {
+      padding: 5rem 3rem;
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .audit-form-section h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .audit-form-section p { color: var(--muted); margin-bottom: 2rem; }
+
+    .audit-input-row {
+      display: flex;
+      gap: 0;
+      margin-bottom: 1rem;
+    }
+
+    .audit-input {
+      flex: 1;
+      padding: 1rem 1.2rem;
+      border: 1.5px solid var(--border);
+      border-right: none;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.88rem;
+      background: white;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .audit-input:focus { border-color: var(--ink); }
+
+    .audit-submit {
+      background: var(--rust);
+      color: white;
+      border: none;
+      padding: 1rem 1.5rem;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.82rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .audit-submit:hover { background: var(--rust-light); }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    footer p {
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-family: 'DM Mono', monospace;
+    }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10,10,10,0.85);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal {
+      background: var(--ink);
+      color: var(--paper);
+      padding: 2.5rem;
+      max-width: 640px;
+      width: 90%;
+      border-radius: 4px;
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: none;
+      border: none;
+      color: #666;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .modal h3 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.6rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .modal-url {
+      font-family: 'DM Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--gold);
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-terminal {
+      background: #000;
+      padding: 1.5rem;
+      border-radius: 4px;
+      font-family: 'DM Mono', monospace;
+      font-size: 0.78rem;
+      line-height: 2;
+      min-height: 220px;
+    }
+
+    .modal-terminal .line { opacity: 0; animation: fadeIn 0.2s forwards; }
+    @keyframes fadeIn { to { opacity: 1; } }
+
+    .modal-scores {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .modal-score {
+      background: #111;
+      padding: 1rem;
+      text-align: center;
+      border-radius: 2px;
+    }
+
+    .modal-score .label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #555;
+      margin-bottom: 0.5rem;
+      font-family: 'DM Mono', monospace;
+    }
+
+    .modal-score .grade {
+      font-family: 'DM Serif Display', serif;
+      font-size: 2rem;
+    }
+
+    .grade-f { color: var(--rust); }
+    .grade-c { color: var(--gold); }
+    .grade-b { color: #7aa2f7; }
+    .grade-a { color: #27c93f; }
+
+    @media (max-width: 768px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero-right { display: none; }
+      nav ul { display: none; }
+      .agents-grid { grid-template-columns: 1fr 1fr; }
+      .report-section { grid-template-columns: 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .modal-scores { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="logo">Audit<span>AI</span></div>
+    <ul>
+      <li><a href="#audit">Run Audit</a></li>
+      <li><a href="#how">How It Works</a></li>
+      <li><a href="#report">Reports</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#audit" class="nav-cta">Get Started</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-left">
+      <p class="eyebrow">AI Marketing Intelligence</p>
+      <h1>Replace the<br/><em>$10,000</em><br/>Agency.</h1>
+      <p class="hero-desc">Five parallel AI agents audit any website in under two minutes — delivering the kind of deep competitive analysis, SEO teardown, and conversion strategy that used to cost thousands per month.</p>
+      <div class="btn-group">
+        <button class="btn-primary" onclick="openDemo()">Run a Free Audit</button>
+        <button class="btn-secondary" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">See How It Works</button>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+          <span class="terminal-title">claude-code — /market-audit</span>
+        </div>
+        <div class="terminal-body">
+          <div><span class="t-prompt">$</span> <span class="t-cmd">/market-audit knobillaesthetics.com</span></div>
+          <div class="t-comment">// Launching 5 parallel sub-agents...</div>
+          <div></div>
+          <div><span class="t-agent">[agent:content]</span> Analyzing brand voice...</div>
+          <div><span class="t-agent">[agent:convert]</span> Scanning conversion funnel...</div>
+          <div><span class="t-agent">[agent:compete]</span> Mapping competitor landscape...</div>
+          <div><span class="t-agent">[agent:tech]</span> Auditing site performance...</div>
+          <div><span class="t-agent">[agent:strategy]</span> Synthesizing findings...</div>
+          <div></div>
+          <div class="t-warn">⚠  Pricing inconsistency detected:</div>
+          <div class="t-warn">   Botox — $1,400 (page 1) vs $1,500 (page 4)</div>
+          <div></div>
+          <div><span class="t-success">✓</span> Audit complete. Overall score: <span class="t-score">64/100 (C-)</span></div>
+          <div><span class="t-success">✓</span> Generating PDF report...</div>
+          <div><span class="t-cursor"></span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPARISON TABLE -->
+  <section class="section">
+    <p class="section-label">The Value Gap</p>
+    <h2>Agency Retainer vs.<br/>Local AI Stack</h2>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Traditional Agency</th>
+          <th>AuditAI (Local Stack)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Monthly Cost</td>
+          <td>$5,000 – $10,000</td>
+          <td><span class="pill pill-good">Effectively $0</span></td>
+        </tr>
+        <tr>
+          <td>Delivery Speed</td>
+          <td><span class="pill pill-bad">Weeks to Months</span></td>
+          <td><span class="pill pill-good">~2 Minutes</span></td>
+        </tr>
+        <tr>
+          <td>Audit Depth</td>
+          <td>Manual review by 1–2 people</td>
+          <td>5 parallel agents, site-wide scan</td>
+        </tr>
+        <tr>
+          <td>Competitive Analysis</td>
+          <td>Surface-level name drops</td>
+          <td>3-tier framework: Direct, Indirect, Aspirational</td>
+        </tr>
+        <tr>
+          <td>Skill Requirement</td>
+          <td><span class="pill pill-bad">Expert Staff Required</span></td>
+          <td><span class="pill pill-good">Basic AI Orchestration</span></td>
+        </tr>
+        <tr>
+          <td>Deliverables</td>
+          <td>Manually drafted documents</td>
+          <td>Automated data-driven PDF reports</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- AGENTS -->
+  <section class="audit-section" id="how">
+    <p class="section-label">Phase 4 — Parallel Execution</p>
+    <h2 style="font-family:'DM Serif Display',serif;font-size:clamp(2rem,3.5vw,3rem);letter-spacing:-0.02em;margin-bottom:0.5rem;">Five Agents.<br/>One Audit.</h2>
+    <p style="color:var(--muted);max-width:520px;">When you run <code style="background:var(--paper);padding:0.1em 0.4em;border-radius:2px;font-family:'DM Mono',monospace;font-size:0.9em;">/market-audit [url]</code>, five specialists launch simultaneously — zero waiting for one to finish before the next begins.</p>
+
+    <div class="agents-grid">
+      <div class="agent-card">
+        <div class="agent-number">01 / CONTENT</div>
+        <span class="agent-icon">✍️</span>
+        <div class="agent-name">Market Content</div>
+        <div class="agent-desc">Analyzes brand voice, messaging consistency, and content quality across all pages.</div>
+      </div>
+      <div class="agent-card">
+        <div class="agent-number">02 / CONVERSION</div>
+        <span class="agent-icon">🎯</span>
+        <div class="agent-name">Market Convert</div>
+        <div class="agent-desc">Evaluates sales funnel efficacy, CTAs, form flow, and purchase friction points.</div>
+      </div>
+      <div class="agent-card">
+        <div class="agent-number">03 / COMPETITIVE</div>
+        <span class="agent-icon">🔍</span>
+        <div class="agent-name">Market Compete</div>
+        <div class="agent-desc">Maps the competitive landscape into Direct, Indirect, and Aspirational tiers.</div>
+      </div>
+      <div class="agent-card">
+        <div class="agent-number">04 / TECHNICAL</div>
+        <span class="agent-icon">⚙️</span>
+        <div class="agent-name">Market Tech</div>
+        <div class="agent-desc">Assesses page speed, Core Web Vitals, schema markup, and backend health signals.</div>
+      </div>
+      <div class="agent-card">
+        <div class="agent-number">05 / STRATEGY</div>
+        <span class="agent-icon">📊</span>
+        <div class="agent-name">Market Strategy</div>
+        <div class="agent-desc">Synthesizes all findings into a prioritized 3-tier action roadmap.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REPORT PREVIEW -->
+  <section class="report-section" id="report">
+    <div class="score-card">
+      <h3>Sample Report — knobillaesthetics.com</h3>
+      <div class="score-item">
+        <span class="score-label">Overall Score</span>
+        <span class="score-value low">C−</span>
+      </div>
+      <div style="margin: 1rem 0;">
+        <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:#666;margin-bottom:0.4rem;">
+          <span>SEO Health</span><span>58/100</span>
+        </div>
+        <div class="score-bar"><div class="score-fill" style="width:58%;background:var(--rust)"></div></div>
+      </div>
+      <div style="margin: 1rem 0;">
+        <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:#666;margin-bottom:0.4rem;">
+          <span>Brand Trust</span><span>71/100</span>
+        </div>
+        <div class="score-bar"><div class="score-fill" style="width:71%;background:var(--gold)"></div></div>
+      </div>
+      <div style="margin: 1rem 0;">
+        <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:#666;margin-bottom:0.4rem;">
+          <span>Conversion Rate</span><span>44/100</span>
+        </div>
+        <div class="score-bar"><div class="score-fill" style="width:44%;background:var(--rust)"></div></div>
+      </div>
+      <div style="margin: 1rem 0;">
+        <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:#666;margin-bottom:0.4rem;">
+          <span>Technical Health</span><span>82/100</span>
+        </div>
+        <div class="score-bar"><div class="score-fill" style="width:82%;background:#27c93f)"></div></div>
+      </div>
+    </div>
+
+    <div class="report-text">
+      <p class="section-label" style="margin-bottom:1rem;">Phase 6 — Client Deliverables</p>
+      <h2>Audit Reports That<br/>Win Clients.</h2>
+      <p>The AI generates a professional PDF report with an executive summary, letter-grade breakdowns, and a prioritized action plan. Critical findings — like pricing inconsistencies — make an immediate case for your retainer.</p>
+
+      <div class="finding">
+        <strong>🔴 Critical — Pricing Inconsistency</strong>
+        Botox listed at $1,400 on /services but $1,500 on /pricing. Destroys trust and kills conversions.
+      </div>
+      <div class="finding">
+        <strong>🟡 Medium — Missing Schema Markup</strong>
+        No LocalBusiness JSON-LD detected. Losing local pack visibility to competitors.
+      </div>
+      <div class="finding">
+        <strong>🟢 Quick Win — CTA Above the Fold</strong>
+        Homepage hero has no booking CTA. A single button could increase leads 15–30%.
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing-section" id="pricing">
+    <p class="section-label" style="color:#555;margin-bottom:0.5rem;">Your Consulting Model</p>
+    <h2>Deliver Agency Value.<br/>Keep the Margin.</h2>
+    <p>Run the audit for free. Charge clients what the results are actually worth.</p>
+
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-tier">Starter</div>
+        <div class="price-amount">$0</div>
+        <div class="price-sub">Open source stack</div>
+        <ul class="price-features">
+          <li>VS Code + Claude Code</li>
+          <li>GitHub skills toolkit</li>
+          <li>5 audit agents</li>
+          <li>PDF report generation</li>
+          <li>Unlimited audits</li>
+        </ul>
+      </div>
+      <div class="price-card featured">
+        <div class="price-tier">Recommended Retainer</div>
+        <div class="price-amount">$2,000–$5,000/mo</div>
+        <div class="price-sub">What you charge your clients</div>
+        <ul class="price-features">
+          <li>Monthly re-audits + tracking</li>
+          <li>Action plan execution</li>
+          <li>Competitive monitoring</li>
+          <li>Content & SEO updates</li>
+          <li>ROI reporting</li>
+        </ul>
+      </div>
+      <div class="price-card">
+        <div class="price-tier">Traditional Agency</div>
+        <div class="price-amount">$10,000/mo</div>
+        <div class="price-sub">What you're replacing</div>
+        <ul class="price-features">
+          <li>Manual research (weeks)</li>
+          <li>Junior staff analysis</li>
+          <li>Templated deliverables</li>
+          <li>Limited audit depth</li>
+          <li>High overhead cost</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- AUDIT FORM -->
+  <section class="audit-form-section" id="audit">
+    <p class="section-label" style="color:var(--muted)">Run Your First Audit</p>
+    <h2>Drop a URL.<br/>Get the Truth.</h2>
+    <p>Enter any website URL to see a simulated audit report — powered by the same 5-agent framework used in the full platform.</p>
+    <div class="audit-input-row">
+      <input class="audit-input" id="urlInput" type="text" placeholder="yourclients-website.com" />
+      <button class="audit-submit" onclick="openDemo()">Audit Now →</button>
+    </div>
+    <p style="font-size:0.75rem;color:var(--muted);font-family:'DM Mono',monospace;">Typical runtime: 90–120 seconds across 5 parallel agents</p>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="logo" style="font-size:1.1rem;">Audit<span style="color:var(--rust);font-style:italic;">AI</span></div>
+    <p>Built with Claude Code · Local AI Stack · Open Source</p>
+    <p>© 2025 AuditAI · Replace the agency.</p>
+  </footer>
+
+  <!-- DEMO MODAL -->
+  <div class="modal-overlay" id="demoModal">
+    <div class="modal">
+      <button class="modal-close" onclick="closeDemo()">✕</button>
+      <h3>Running Market Audit</h3>
+      <div class="modal-url" id="modalUrl">→ knobillaesthetics.com</div>
+      <div class="modal-terminal" id="modalTerminal"></div>
+      <div class="modal-scores" id="modalScores" style="display:none;">
+        <div class="modal-score">
+          <div class="label">SEO Health</div>
+          <div class="grade grade-f">C−</div>
+        </div>
+        <div class="modal-score">
+          <div class="label">Brand Trust</div>
+          <div class="grade grade-b">B</div>
+        </div>
+        <div class="modal-score">
+          <div class="label">Conversion</div>
+          <div class="grade grade-f">D+</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const lines = [
+      { text: '$ /market-audit {URL}', color: '#fff', delay: 0 },
+      { text: '// Initializing 5 parallel sub-agents...', color: '#555', delay: 400 },
+      { text: '[agent:content]  → Crawling brand voice & messaging...', color: '#7aa2f7', delay: 900 },
+      { text: '[agent:convert]  → Scanning CTA placement & funnel depth...', color: '#7aa2f7', delay: 1300 },
+      { text: '[agent:compete]  → Mapping 3-tier competitive landscape...', color: '#7aa2f7', delay: 1700 },
+      { text: '[agent:tech]     → Auditing Core Web Vitals & schema...', color: '#7aa2f7', delay: 2100 },
+      { text: '[agent:strategy] → Synthesizing action roadmap...', color: '#7aa2f7', delay: 2500 },
+      { text: '', color: '', delay: 3200 },
+      { text: '⚠  CRITICAL: Pricing inconsistency on /services vs /pricing', color: '#ffbd2e', delay: 3400 },
+      { text: '⚠  MISSING: LocalBusiness JSON-LD schema markup', color: '#ffbd2e', delay: 3700 },
+      { text: '⚠  WEAK: No booking CTA above the fold on homepage', color: '#ffbd2e', delay: 4000 },
+      { text: '', color: '', delay: 4400 },
+      { text: '✓ Audit complete — 64/100 overall (C−)', color: '#27c93f', delay: 4600 },
+      { text: '✓ PDF report ready to download', color: '#27c93f', delay: 5000 },
+    ];
+
+    function openDemo() {
+      const url = document.getElementById('urlInput').value || 'knobillaesthetics.com';
+      document.getElementById('modalUrl').textContent = '→ ' + url;
+      document.getElementById('demoModal').classList.add('active');
+      document.getElementById('modalScores').style.display = 'none';
+      const terminal = document.getElementById('modalTerminal');
+      terminal.innerHTML = '';
+
+      lines.forEach((line, i) => {
+        setTimeout(() => {
+          const div = document.createElement('div');
+          div.className = 'line';
+          div.style.color = line.color || '#555';
+          div.textContent = line.text.replace('{URL}', url);
+          terminal.appendChild(div);
+          terminal.scrollTop = terminal.scrollHeight;
+
+          if (i === lines.length - 1) {
+            setTimeout(() => {
+              document.getElementById('modalScores').style.display = 'grid';
+            }, 500);
+          }
+        }, line.delay);
+      });
+    }
+
+    function closeDemo() {
+      document.getElementById('demoModal').classList.remove('active');
+    }
+
+    document.getElementById('demoModal').addEventListener('click', function(e) {
+      if (e.target === this) closeDemo();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+# HOW TO RUN AUDITAI
+# (No coding knowledge needed — just follow these steps)
+
+============================================================
+STEP 1 — Install everything (one time only)
+============================================================
+
+Open Cursor, open the Terminal (Ctrl + `) and run:
+
+    pip install -r requirements.txt
+
+Wait for it to finish. You'll see "Successfully installed" at the end.
+
+
+============================================================
+STEP 2 — Launch the app
+============================================================
+
+In the same terminal, run:
+
+    streamlit run app.py
+
+Your browser will automatically open to:
+    http://localhost:8501
+
+That's your app! It looks like a real website.
+
+
+============================================================
+STEP 3 — Run an audit
+============================================================
+
+1. Type any website URL into the box (e.g. yourclient.com)
+2. Click "Run Audit →"
+3. Watch the 5 agents run in real time
+4. View the full report on screen
+5. Click "Download PDF Report" to get the client-ready PDF
+
+
+============================================================
+STEP 4 — Share with clients (optional)
+============================================================
+
+To give clients their own URL (e.g. youragency.streamlit.app):
+
+1. Go to https://streamlit.io/cloud and sign up free
+2. Push your project to GitHub (Cursor can do this for you)
+3. Connect your repo in Streamlit Cloud
+4. Share the URL — done!
+
+
+============================================================
+STOPPING THE APP
+============================================================
+
+Go back to the terminal and press:   Ctrl + C
+
+
+============================================================
+RUNNING IT AGAIN LATER
+============================================================
+
+Just open the project in Cursor and run:
+
+    streamlit run app.py
