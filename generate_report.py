@@ -683,6 +683,191 @@ def page_competitors(data, styles):
 
 
 
+def page_strategic_opportunities(data, styles):
+    """Section 6: Strategic Opportunities — niche-detected growth patterns."""
+    story = []
+    so    = data.get("strategic_opportunities")
+    if not so:
+        return story
+
+    story.append(Paragraph("STRATEGIC OPPORTUNITIES", styles["section_label"]))
+    story.append(Paragraph("Context-Driven Growth Patterns", styles["section_heading"]))
+    story.append(HRFlowable(width="100%", thickness=1, color=BORDER, spaceAfter=12))
+
+    # Intro paragraph
+    story.append(Paragraph(
+        "Beyond technical findings, AuditAI detects niche-specific patterns that signal high-leverage "
+        "opportunities. These are not audit deficiencies — they are strategic gaps identified from your "
+        "detected business context. Human review is required before acting.",
+        styles["body_muted"],
+    ))
+    story.append(Spacer(1, 0.15 * inch))
+
+    # Niche detection badge
+    niche_badge_data = [[
+        Paragraph("● NICHE DETECTED", ParagraphStyle(
+            "nb1", fontName="Helvetica-Bold", fontSize=8,
+            textColor=RUST, letterSpacing=1,
+        )),
+        Paragraph(so.get("niche_label", "General Business"), ParagraphStyle(
+            "nb2", fontName="Helvetica", fontSize=9,
+            textColor=PAPER,
+        )),
+    ]]
+    niche_badge = Table(niche_badge_data, colWidths=[1.6 * inch, 5.9 * inch])
+    niche_badge.setStyle(TableStyle([
+        ("BACKGROUND",    (0, 0), (-1, -1), INK),
+        ("TOPPADDING",    (0, 0), (-1, -1), 10),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+        ("LEFTPADDING",   (0, 0), (-1, -1), 14),
+        ("RIGHTPADDING",  (0, 0), (-1, -1), 14),
+        ("VALIGN",        (0, 0), (-1, -1), "MIDDLE"),
+    ]))
+    story.append(niche_badge)
+    story.append(Spacer(1, 0.2 * inch))
+
+    # Impact color map
+    impact_colors = {"high": RUST, "medium": GOLD, "low": SAGE}
+    impact_bg     = {
+        "high":   colors.HexColor("#fff5f3"),
+        "medium": colors.HexColor("#fffdf0"),
+        "low":    colors.HexColor("#f5fff3"),
+    }
+
+    cards = so.get("opportunity_cards", [])
+    for card in cards:
+        impact     = card.get("impact", "medium")
+        imp_col    = impact_colors.get(impact, MUTED)
+        imp_bg     = impact_bg.get(impact, PAPER)
+        impact_lbl = impact.upper()
+        detected_by = card.get("detected_by", "")
+
+        # ── Card header row ──
+        header_row = Table([[
+            Paragraph(f"  {impact_lbl}  ", ParagraphStyle(
+                "ilab", fontName="Helvetica-Bold", fontSize=7.5,
+                textColor=colors.white, alignment=TA_CENTER,
+            )),
+            Paragraph(f"Detected via: {detected_by}", ParagraphStyle(
+                "dby", fontName="Helvetica", fontSize=7.5,
+                textColor=MUTED, alignment=TA_RIGHT,
+            )),
+        ]], colWidths=[1.1 * inch, 6.4 * inch])
+        header_row.setStyle(TableStyle([
+            ("BACKGROUND",    (0, 0), (0, 0), imp_col),
+            ("BACKGROUND",    (1, 0), (1, 0), imp_bg),
+            ("TOPPADDING",    (0, 0), (-1, -1), 6),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+            ("LEFTPADDING",   (0, 0), (-1, -1), 10),
+            ("RIGHTPADDING",  (0, 0), (-1, -1), 10),
+            ("VALIGN",        (0, 0), (-1, -1), "MIDDLE"),
+        ]))
+
+        # ── Card body ──
+        body_content = [
+            Paragraph(f"<b>{card['title']}</b>", ParagraphStyle(
+                "ct", fontName="Helvetica-Bold", fontSize=10.5,
+                textColor=INK, leading=15, spaceAfter=6,
+            )),
+            Paragraph(card.get("description", ""), ParagraphStyle(
+                "cd", fontName="Helvetica", fontSize=9,
+                textColor=colors.HexColor("#444"), leading=14, spaceAfter=8,
+            )),
+        ]
+
+        # Signal pills row (inline text)
+        signals = card.get("signals", [])
+        if signals:
+            detected_sigs = [s["label"] for s in signals if s["detected"]]
+            missing_sigs  = [s["label"] for s in signals if not s["detected"]]
+            pill_parts = []
+            for lbl in detected_sigs:
+                pill_parts.append(f'<font color="#2d6a4f">✓ {lbl}</font>')
+            for lbl in missing_sigs:
+                pill_parts.append(f'<font color="#c84b2f">✗ {lbl}</font>')
+            if pill_parts:
+                body_content.append(Paragraph(
+                    "  ·  ".join(pill_parts),
+                    ParagraphStyle("sigs", fontName="Helvetica", fontSize=8, textColor=MUTED, leading=13, spaceAfter=8),
+                ))
+
+        # Recommendation box
+        body_content.append(Paragraph(
+            f"<b>PATTERN RECOMMENDATION</b>",
+            ParagraphStyle("rlbl", fontName="Helvetica-Bold", fontSize=7.5,
+                           textColor=RUST, letterSpacing=1, spaceAfter=3),
+        ))
+        body_content.append(Paragraph(
+            card.get("recommendation", ""),
+            ParagraphStyle("rtxt", fontName="Helvetica", fontSize=9,
+                           textColor=PAPER, leading=14),
+        ))
+
+        # Recommendation container (dark box)
+        rec_container = Table(
+            [[body_content[-2]], [body_content[-1]]],
+            colWidths=[7.5 * inch],
+        )
+        rec_container.setStyle(TableStyle([
+            ("BACKGROUND",    (0, 0), (-1, -1), INK),
+            ("TOPPADDING",    (0, 0), (-1, -1), 10),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+            ("LEFTPADDING",   (0, 0), (-1, -1), 14),
+            ("RIGHTPADDING",  (0, 0), (-1, -1), 14),
+        ]))
+
+        # Build full card
+        card_rows = [[header_row]]
+        # Body items before recommendation
+        for item in body_content[:-2]:
+            card_rows.append([item])
+        card_rows.append([rec_container])
+
+        full_card = Table(card_rows, colWidths=[7.5 * inch])
+        full_card.setStyle(TableStyle([
+            ("BACKGROUND",    (0, 0), (-1, -2), imp_bg),
+            ("BACKGROUND",    (0, -1), (-1, -1), INK),
+            ("BOX",           (0, 0), (-1, -1), 0.8, imp_col),
+            ("LINEABOVE",     (0, 0), (-1, 0), 3, imp_col),
+            ("TOPPADDING",    (0, 1), (-1, -2), 8),
+            ("BOTTOMPADDING", (0, 1), (-1, -2), 4),
+            ("LEFTPADDING",   (0, 1), (-1, -2), 14),
+            ("RIGHTPADDING",  (0, 1), (-1, -2), 14),
+            ("TOPPADDING",    (0, -1), (-1, -1), 0),
+            ("BOTTOMPADDING", (0, -1), (-1, -1), 0),
+            ("LEFTPADDING",   (0, -1), (-1, -1), 0),
+            ("RIGHTPADDING",  (0, -1), (-1, -1), 0),
+        ]))
+        story.append(full_card)
+        story.append(Spacer(1, 0.15 * inch))
+
+    # Scope caveat
+    story.append(Spacer(1, 0.1 * inch))
+    caveat = Table([[
+        Paragraph("⚠  IMPORTANT SCOPE NOTE", ParagraphStyle(
+            "cnlbl", fontName="Helvetica-Bold", fontSize=8,
+            textColor=GOLD, letterSpacing=1, spaceAfter=4,
+        )),
+    ], [
+        Paragraph(so.get("scope_note", ""), ParagraphStyle(
+            "cntxt", fontName="Helvetica", fontSize=8.5,
+            textColor=INK, leading=14,
+        )),
+    ]], colWidths=[7.5 * inch])
+    caveat.setStyle(TableStyle([
+        ("BOX",           (0, 0), (-1, -1), 0.5, BORDER),
+        ("LINEBEFORE",    (0, 0), (-1, -1), 3, GOLD),
+        ("BACKGROUND",    (0, 0), (-1, -1), colors.HexColor("#faf8f4")),
+        ("TOPPADDING",    (0, 0), (-1, -1), 10),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+        ("LEFTPADDING",   (0, 0), (-1, -1), 14),
+        ("RIGHTPADDING",  (0, 0), (-1, -1), 14),
+    ]))
+    story.append(caveat)
+
+    return story
+
+
 # ── Main Generator ────────────────────────────────────────────
 
 def generate_report(audit_data: dict, output_dir: str = "reports") -> str:
@@ -711,6 +896,8 @@ def generate_report(audit_data: dict, output_dir: str = "reports") -> str:
     story += page_findings(audit_data, styles)
     story += page_action_plan(audit_data, styles)
     story += page_competitors(audit_data, styles)
+    if audit_data.get("strategic_opportunities"):
+        story += page_strategic_opportunities(audit_data, styles)
 
     doc.build(
         story,

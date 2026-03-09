@@ -237,6 +237,7 @@ if not st.session_state.audit_done:
                 ("market-compete",  "Mapping competitive landscape"),
                 ("market-tech",     "Auditing technical SEO signals"),
                 ("market-strategy", "Synthesizing findings via Claude API"),
+                ("market-intel",    "Detecting niche strategic patterns"),
             ]
 
             completed = []
@@ -416,6 +417,64 @@ if st.session_state.audit_done and st.session_state.audit_data:
         cols[4].markdown(f'<span style="color:{tc};font-weight:700">{c.get("threat","—")}</span>', unsafe_allow_html=True)
 
     st.markdown("---")
+
+    # ── Strategic Opportunities (Section 6) ──────────────────
+    so = data.get("strategic_opportunities")
+    if so and so.get("opportunity_cards"):
+        st.markdown("### Strategic Opportunities")
+        st.caption(f"🎯 Niche detected: **{so.get('niche_label', '')}** — pattern-based growth signals")
+
+        impact_colors = {"high": "#c84b2f", "medium": "#c9a227", "low": "#4a6741"}
+        impact_bg     = {"high": "#fff5f3", "medium": "#fffdf0", "low": "#f5fff3"}
+
+        for card in so["opportunity_cards"]:
+            impact  = card.get("impact", "medium")
+            imp_col = impact_colors.get(impact, "#888")
+            imp_bg  = impact_bg.get(impact, "#fafafa")
+
+            # Build signal pills HTML
+            pills_html = ""
+            for sig in card.get("signals", []):
+                if sig["detected"]:
+                    pills_html += f'<span style="border:1px solid #2d6a4f;color:#2d6a4f;background:#d4edda;font-family:DM Mono,monospace;font-size:0.68rem;padding:3px 8px;border-radius:2px;margin-right:4px;">✓ {sig["label"]}</span>'
+                else:
+                    pills_html += f'<span style="border:1px solid #c84b2f;color:#c84b2f;background:#fff0ed;font-family:DM Mono,monospace;font-size:0.68rem;padding:3px 8px;border-radius:2px;margin-right:4px;">✗ {sig["label"]}</span>'
+
+            st.markdown(f"""
+            <div style="background:{imp_bg};border:1px solid #d4cfc3;border-left:3px solid {imp_col};
+                        border-radius:4px;padding:1rem 1.2rem;margin-bottom:0.75rem;">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+                <span style="font-family:DM Mono,monospace;font-size:0.68rem;letter-spacing:0.12em;
+                             text-transform:uppercase;background:{imp_col};color:white;
+                             padding:2px 8px;border-radius:2px;">{impact.upper()}</span>
+                <span style="font-family:DM Mono,monospace;font-size:0.68rem;color:#7a7060;">
+                  Detected via: {card.get("detected_by","")}</span>
+              </div>
+              <div style="font-weight:700;font-size:0.95rem;color:#0a0a0a;margin-bottom:0.4rem;">
+                {card["title"]}</div>
+              <div style="font-size:0.87rem;color:#444;line-height:1.55;margin-bottom:0.6rem;">
+                {card["description"]}</div>
+              <div style="margin-bottom:0.75rem;">{pills_html}</div>
+              <div style="background:#0a0a0a;padding:0.75rem 1rem;border-radius:3px;">
+                <div style="font-family:DM Mono,monospace;font-size:0.65rem;letter-spacing:0.15em;
+                            color:#c84b2f;text-transform:uppercase;margin-bottom:4px;">Pattern Recommendation</div>
+                <div style="font-size:0.86rem;color:#f5f0e8;line-height:1.5;">
+                  {card["recommendation"]}</div>
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        # Scope note
+        st.markdown(f"""
+        <div style="border:1px solid #d4cfc3;border-left:3px solid #c9a227;background:#faf8f4;
+                    padding:0.85rem 1rem;margin-top:0.5rem;border-radius:2px;">
+          <div style="font-family:DM Mono,monospace;font-size:0.65rem;letter-spacing:0.15em;
+                      text-transform:uppercase;color:#c9a227;margin-bottom:5px;">⚠ Important Scope Note</div>
+          <div style="font-size:0.82rem;color:#7a7060;line-height:1.6;">{so.get("scope_note","")}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        st.markdown("---")
 
     # ── Download ──────────────────────────────────────────────
     st.markdown("### Download Client Report")

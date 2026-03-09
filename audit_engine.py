@@ -4,7 +4,530 @@ Scrapes any URL, finds REAL competitors via Google, verifies each URL,
 then uses Claude API to produce genuine audit data.
 """
 
-VERSION = "12"  # ← Update this whenever you install a new version
+VERSION = "13"  # ← Update this whenever you install a new version
+
+# ─────────────────────────────────────────────────────────────
+# Niche → Strategic Pattern Library
+# Maps detected business types to high-impact opportunity patterns
+# These are strategic signals, not audit deficiencies
+# ─────────────────────────────────────────────────────────────
+
+NICHE_PATTERNS = {
+    "tdiu vocational": {
+        "niche_label": "Legal / VA Benefits / High-Trust Advisory",
+        "patterns": [
+            {
+                "title": "Authority & Expertise Signals Absent for High-Trust Niche",
+                "impact": "high",
+                "detected_by": "content + compete agents",
+                "description": (
+                    "In legal and VA benefits contexts, visitors are making high-stakes, irreversible decisions. "
+                    "Credential visibility, years of experience, report volume, and expert testimony history "
+                    "are not optional trust signals — they are conversion prerequisites."
+                ),
+                "signals_check": ["has_credentials", "has_report_count", "has_expert_history"],
+                "recommendation": (
+                    "Add a dedicated credentials block above the fold: years active, number of reports produced, "
+                    "certifications held, and expert witness history. In VA/legal niches this directly correlates with conversion rate."
+                ),
+            },
+            {
+                "title": "Attorney Referral Channel Identified — No Dedicated Funnel",
+                "impact": "high",
+                "detected_by": "compete + strategy agents",
+                "description": (
+                    "Competitor analysis identified The Shae Group and CRC Services actively targeting VA disability "
+                    "attorneys as a referral channel. Attorney-facing pages with sample reports and direct contact "
+                    "paths typically convert at higher rates than direct-to-veteran outreach."
+                ),
+                "signals_check": ["has_attorney_page", "has_sample_report", "has_attorney_cta"],
+                "recommendation": (
+                    "Build a 'For VA Disability Attorneys' landing page with a sample anonymized report, "
+                    "turnaround time SLA, and a direct contact path. Competitors Shae Group and CRC already own this channel."
+                ),
+            },
+            {
+                "title": "Lead Capture Limited to Contact Form — Pre-Qualification Gap",
+                "impact": "medium",
+                "detected_by": "convert agent",
+                "description": (
+                    "Veterans in early research stages have no lower-friction path to engage beyond a contact form. "
+                    "In high-consideration niches, passive lead capture typically captures 3–5x more leads "
+                    "than form-only sites."
+                ),
+                "signals_check": ["has_eligibility_checker", "has_downloadable_guide", "has_email_capture"],
+                "recommendation": (
+                    "A simple TDIU eligibility self-assessment (3–5 questions) or a downloadable guide "
+                    "'How to Use a Vocational Report in Your VA Claim' would capture pre-intent leads before they comparison-shop."
+                ),
+            },
+            {
+                "title": "Outcome Proof Gap vs. Competitors Showing Case Results",
+                "impact": "high",
+                "detected_by": "compete + content agents",
+                "description": (
+                    "Category leaders leverage case outcomes and review counts as primary trust differentiators. "
+                    "Veterans respond strongly to peer outcomes — especially when the decision involves a multi-year disability claim."
+                ),
+                "signals_check": ["has_case_outcomes", "has_anonymized_results"],
+                "recommendation": (
+                    "An anonymized 'Recent Outcomes' section — even 4–6 brief entries — would close the proof gap significantly. "
+                    "Format: condition type, claim stage, outcome. No names required."
+                ),
+            },
+        ],
+    },
+    "law firm": {
+        "niche_label": "Legal Services / High-Trust Advisory",
+        "patterns": [
+            {
+                "title": "Attorney Credentialing & Bar Information Not Prominent",
+                "impact": "high",
+                "detected_by": "content + trust agents",
+                "description": (
+                    "Prospective legal clients verify attorney credentials before contact. Bar numbers, "
+                    "years admitted, case types won, and peer recognitions (Super Lawyers, AV Preeminent) "
+                    "are expected trust signals in this niche."
+                ),
+                "signals_check": ["has_bar_info", "has_case_results", "has_peer_recognition"],
+                "recommendation": (
+                    "Add an attorney profile section with bar admission, practice areas, notable outcomes, "
+                    "and any recognitions. This is table stakes for legal conversion."
+                ),
+            },
+            {
+                "title": "Free Consultation CTA Not Prominent Enough",
+                "impact": "high",
+                "detected_by": "convert agent",
+                "description": (
+                    "Free consultations are the primary conversion event for legal services. "
+                    "If the offer isn't above the fold on every page, you are losing high-intent visitors to competitors who make it easier."
+                ),
+                "signals_check": ["has_free_consult_cta"],
+                "recommendation": (
+                    "Add a persistent 'Free Consultation' CTA in the header on every page. "
+                    "Phone and form should both be visible — different clients prefer different contact methods."
+                ),
+            },
+            {
+                "title": "Case Results & Testimonials Underutilized",
+                "impact": "medium",
+                "detected_by": "content + compete agents",
+                "description": (
+                    "Social proof in legal is outcome-based, not review-based. Anonymized case results "
+                    "(settlement amounts, verdicts, outcomes) convert far more effectively than star ratings."
+                ),
+                "signals_check": ["has_case_results", "has_outcome_testimonials"],
+                "recommendation": (
+                    "Build a case results section with anonymized outcomes grouped by practice area. "
+                    "Even 5–10 entries with dollar amounts or verdict types significantly increases trust signals."
+                ),
+            },
+        ],
+    },
+    "medical spa aesthetics": {
+        "niche_label": "Aesthetics / High-Consideration Retail",
+        "patterns": [
+            {
+                "title": "Before/After Gallery Absent or Undersized",
+                "impact": "high",
+                "detected_by": "content + convert agents",
+                "description": (
+                    "Before/after imagery is the single highest-converting content type in aesthetics. "
+                    "Visitors want to see real outcomes from real clients before booking a procedure. "
+                    "Competitors with 20+ before/after sets convert at significantly higher rates."
+                ),
+                "signals_check": ["has_before_after", "has_gallery"],
+                "recommendation": (
+                    "Build a before/after library organized by treatment. Aim for 5+ real client examples per "
+                    "core service. Include patient age and treatment details for maximum relatability."
+                ),
+            },
+            {
+                "title": "Injector Credentials & Training Not Visible",
+                "impact": "high",
+                "detected_by": "content + trust agents",
+                "description": (
+                    "Patients choosing between med spas weigh injector credentials heavily. "
+                    "Board certifications, years of experience, and training backgrounds (Allergan, Galderma certified) "
+                    "are trust accelerators that most small med spas underutilize."
+                ),
+                "signals_check": ["has_injector_credentials", "has_team_page"],
+                "recommendation": (
+                    "Create individual injector profiles with headshots, credentials, specializations, "
+                    "and patient philosophy. This personalizes the brand and differentiates from chain competitors."
+                ),
+            },
+            {
+                "title": "Membership / Loyalty Program Not Featured",
+                "impact": "medium",
+                "detected_by": "convert + strategy agents",
+                "description": (
+                    "Recurring revenue through membership programs is the dominant business model shift in aesthetics. "
+                    "Monthly membership models (e.g., $99/month for one unit of Botox) increase LTV and reduce acquisition costs."
+                ),
+                "signals_check": ["has_membership", "has_loyalty_program"],
+                "recommendation": (
+                    "If you offer a membership program, make it homepage-prominent. "
+                    "If you don't, consider adding one — it is the fastest path to predictable monthly revenue in this category."
+                ),
+            },
+        ],
+    },
+    "dental practice": {
+        "niche_label": "Healthcare / Local Service / Insurance-Dependent",
+        "patterns": [
+            {
+                "title": "Insurance & Financing Information Buried",
+                "impact": "high",
+                "detected_by": "convert agent",
+                "description": (
+                    "Insurance acceptance and financing options are among the top 3 questions dental patients ask before booking. "
+                    "If this information is not visible on the homepage, cost-sensitive patients leave without contacting."
+                ),
+                "signals_check": ["has_insurance_info", "has_financing_info"],
+                "recommendation": (
+                    "Add an insurance/financing section to the homepage and services pages. "
+                    "List accepted plans explicitly — ambiguity causes drop-off."
+                ),
+            },
+            {
+                "title": "New Patient Offer Not Prominent",
+                "impact": "high",
+                "detected_by": "convert agent",
+                "description": (
+                    "New patient specials (e.g., '$99 new patient exam + X-rays') are the highest-converting "
+                    "offer in dental. If you have one but it's not above the fold, you're losing new patients to "
+                    "competitors who make the offer obvious."
+                ),
+                "signals_check": ["has_new_patient_offer"],
+                "recommendation": (
+                    "Feature your new patient special prominently on the homepage with a clear CTA. "
+                    "If you don't have one, create it — it is the most effective patient acquisition lever in local dental."
+                ),
+            },
+        ],
+    },
+    "financial advisory": {
+        "niche_label": "Financial Services / Regulated / Trust-Critical",
+        "patterns": [
+            {
+                "title": "Fiduciary Status & Regulatory Disclosures Not Visible",
+                "impact": "high",
+                "detected_by": "content + trust agents",
+                "description": (
+                    "Post-2020, fiduciary status has become a primary differentiator in financial advisory. "
+                    "Prospects who find your site via search are often specifically looking for fee-only or fiduciary advisors — "
+                    "if this isn't stated clearly, they assume it's absent."
+                ),
+                "signals_check": ["has_fiduciary_statement", "has_regulatory_info"],
+                "recommendation": (
+                    "State fiduciary status and fee structure (fee-only, fee-based, AUM) above the fold. "
+                    "Include CRD number and a link to your ADV for credibility with sophisticated prospects."
+                ),
+            },
+            {
+                "title": "Ideal Client Profile Not Defined — Qualification Gap",
+                "impact": "medium",
+                "detected_by": "content + convert agents",
+                "description": (
+                    "Advisors who clearly state their ideal client (e.g., 'we work with pre-retirees ages 55–65 "
+                    "with $500K+ in investable assets') attract higher-quality leads and reduce unqualified inquiries. "
+                    "Generic messaging attracts everyone and converts no one."
+                ),
+                "signals_check": ["has_ideal_client_definition"],
+                "recommendation": (
+                    "Add an 'Who We Work With' section that clearly defines your ideal client by age, "
+                    "asset level, life stage, or situation. This increases lead quality dramatically."
+                ),
+            },
+        ],
+    },
+    "fitness gym": {
+        "niche_label": "Fitness / Recurring Revenue / Community-Driven",
+        "patterns": [
+            {
+                "title": "Free Trial or Day Pass Offer Not Visible",
+                "impact": "high",
+                "detected_by": "convert agent",
+                "description": (
+                    "The gym industry's primary acquisition event is the free trial visit. "
+                    "Prospects who can't find a low-friction 'try it first' option bounce to competitors who offer one clearly."
+                ),
+                "signals_check": ["has_free_trial", "has_day_pass"],
+                "recommendation": (
+                    "Feature a free trial or day pass CTA above the fold. "
+                    "Remove friction from signup — name and email only, no credit card required for first visit."
+                ),
+            },
+            {
+                "title": "Community & Culture Signals Absent",
+                "impact": "medium",
+                "detected_by": "content + trust agents",
+                "description": (
+                    "Boutique gym decisions are driven by community fit as much as equipment or price. "
+                    "Member stories, coach bios, class atmosphere photos, and transformation content "
+                    "are the trust signals that differentiate boutique from big-box."
+                ),
+                "signals_check": ["has_member_stories", "has_coach_bios", "has_community_content"],
+                "recommendation": (
+                    "Add a 'Meet Our Community' or 'Meet Our Coaches' section with real photos and short bios. "
+                    "Feature 3–5 member transformation stories. This outperforms equipment specs for conversion."
+                ),
+            },
+        ],
+    },
+    "home services contractor": {
+        "niche_label": "Home Services / Local / Trust-Critical",
+        "patterns": [
+            {
+                "title": "License, Insurance & Bonding Credentials Not Visible",
+                "impact": "high",
+                "detected_by": "content + trust agents",
+                "description": (
+                    "Homeowners letting contractors into their homes want proof of licensing, insurance, and bonding "
+                    "before they call. If these aren't visible on the homepage, you lose prospects to competitors who list them."
+                ),
+                "signals_check": ["has_license_info", "has_insurance_info", "has_bonding_info"],
+                "recommendation": (
+                    "Add license number, insurance carrier, and bonding status to the homepage and contact page. "
+                    "Consider a trust badge strip near the CTA."
+                ),
+            },
+            {
+                "title": "Emergency / Same-Day Service CTA Missing",
+                "impact": "high",
+                "detected_by": "convert agent",
+                "description": (
+                    "A significant portion of home services searches are emergency-driven (burst pipe, no heat, etc.). "
+                    "If 'emergency service' or 'same-day' is not prominent, high-urgency customers call whoever they find first."
+                ),
+                "signals_check": ["has_emergency_cta", "has_same_day_offer"],
+                "recommendation": (
+                    "Add emergency/same-day availability prominently in the header with a click-to-call number. "
+                    "This captures the highest-intent, highest-margin segment of home services traffic."
+                ),
+            },
+        ],
+    },
+    "real estate agency": {
+        "niche_label": "Real Estate / Transaction-Driven / Hyper-Local",
+        "patterns": [
+            {
+                "title": "Hyper-Local Market Data Not Featured",
+                "impact": "high",
+                "detected_by": "content + strategy agents",
+                "description": (
+                    "Buyers and sellers choose agents who demonstrate local market expertise. "
+                    "Agents who publish neighborhood-specific data (days on market, median price trends, "
+                    "inventory levels) build authority that portal aggregators (Zillow, Realtor.com) cannot replicate."
+                ),
+                "signals_check": ["has_market_data", "has_neighborhood_content"],
+                "recommendation": (
+                    "Publish a monthly local market update — even a simple table of 5 data points per neighborhood. "
+                    "This is the fastest path to local SEO authority and differentiates from national portals."
+                ),
+            },
+            {
+                "title": "Seller & Buyer Journey Pages Absent",
+                "impact": "medium",
+                "detected_by": "content + convert agents",
+                "description": (
+                    "Dedicated 'Selling Your Home' and 'Buying a Home' process pages rank for high-intent keywords "
+                    "and pre-educate prospects before they contact. Most small agencies skip these — "
+                    "giving the content gap to national competitors."
+                ),
+                "signals_check": ["has_seller_page", "has_buyer_page"],
+                "recommendation": (
+                    "Build dedicated pages for buyer and seller journeys that explain your process, timeline, "
+                    "and what makes working with you different. These pages rank well and convert better than homepage CTAs."
+                ),
+            },
+        ],
+    },
+    "restaurant": {
+        "niche_label": "Food & Beverage / Impulse-Driven / Review-Heavy",
+        "patterns": [
+            {
+                "title": "Online Ordering / Reservation CTA Not Above the Fold",
+                "impact": "high",
+                "detected_by": "convert agent",
+                "description": (
+                    "Restaurant website visitors have one of two intents: reserve a table or order food. "
+                    "If either action requires more than one click from the homepage, you lose the conversion "
+                    "to a platform that makes it easier (OpenTable, DoorDash, Yelp)."
+                ),
+                "signals_check": ["has_reservation_cta", "has_order_cta"],
+                "recommendation": (
+                    "Add reservation and order buttons above the fold on mobile and desktop. "
+                    "Own the conversion — don't send it to third-party platforms that take a cut."
+                ),
+            },
+            {
+                "title": "Menu Not Indexed by Search Engines",
+                "impact": "medium",
+                "detected_by": "tech + seo agents",
+                "description": (
+                    "Many restaurant menus are loaded as PDFs or images that search engines cannot read. "
+                    "An HTML menu page with dish names and descriptions ranks for food-specific queries "
+                    "and drives 'near me' traffic that PDF menus cannot capture."
+                ),
+                "signals_check": ["has_html_menu", "has_menu_schema"],
+                "recommendation": (
+                    "Publish your menu as an HTML page with text descriptions, not a PDF. "
+                    "Add Menu schema markup. This is a free SEO win that most restaurants ignore."
+                ),
+            },
+        ],
+    },
+}
+
+# Default patterns for unmatched niches
+DEFAULT_PATTERNS = {
+    "niche_label": "General Business",
+    "patterns": [
+        {
+            "title": "Social Proof & Trust Signals Below Industry Benchmark",
+            "impact": "high",
+            "detected_by": "content + trust agents",
+            "description": (
+                "Reviews, testimonials, case studies, and client logos are the primary trust accelerators "
+                "across all industries. Sites without visible social proof lose conversions to competitors who have it."
+            ),
+            "signals_check": ["has_reviews", "has_testimonials"],
+            "recommendation": (
+                "Add a testimonials section with outcome-specific quotes. "
+                "Aim for 5+ visible reviews on the homepage with names and context."
+            ),
+        },
+        {
+            "title": "Lead Capture Beyond Contact Form Not Present",
+            "impact": "medium",
+            "detected_by": "convert agent",
+            "description": (
+                "A contact form captures only high-intent visitors. "
+                "Earlier-stage prospects need a lower-friction path — a downloadable guide, free assessment, "
+                "or newsletter — to enter your funnel before they're ready to buy."
+            ),
+            "signals_check": ["has_lead_magnet", "has_email_capture"],
+            "recommendation": (
+                "Add one passive lead capture element: a downloadable guide, checklist, or free assessment. "
+                "This captures the middle-funnel audience that a contact form misses entirely."
+            ),
+        },
+    ],
+}
+
+
+def get_niche_patterns(biz_type: str) -> dict:
+    """Match detected business type to strategic pattern library."""
+    biz_lower = biz_type.lower()
+    for key in NICHE_PATTERNS:
+        if key in biz_lower:
+            return NICHE_PATTERNS[key]
+    # Partial keyword matches
+    if any(w in biz_lower for w in ["tdiu", "vocational", "veteran"]):
+        return NICHE_PATTERNS["tdiu vocational"]
+    if any(w in biz_lower for w in ["law", "attorney", "lawyer"]):
+        return NICHE_PATTERNS["law firm"]
+    if any(w in biz_lower for w in ["medspa", "aesthetics", "botox"]):
+        return NICHE_PATTERNS["medical spa aesthetics"]
+    if any(w in biz_lower for w in ["dental", "dentist"]):
+        return NICHE_PATTERNS["dental practice"]
+    if any(w in biz_lower for w in ["financial", "advisor", "wealth"]):
+        return NICHE_PATTERNS["financial advisory"]
+    if any(w in biz_lower for w in ["gym", "fitness"]):
+        return NICHE_PATTERNS["fitness gym"]
+    if any(w in biz_lower for w in ["plumb", "hvac", "roofing", "contractor"]):
+        return NICHE_PATTERNS["home services contractor"]
+    if any(w in biz_lower for w in ["real estate", "realtor"]):
+        return NICHE_PATTERNS["real estate agency"]
+    if any(w in biz_lower for w in ["restaurant", "dining", "cafe"]):
+        return NICHE_PATTERNS["restaurant"]
+    return DEFAULT_PATTERNS
+
+
+def generate_strategic_opportunities(page: dict, biz_type: str, competitors: list, body_text: str) -> dict:
+    """
+    Generate Section 6: Strategic Opportunities.
+    Detects niche, matches patterns, and scores detected vs. missing signals
+    from actual scraped page data. Returns structured data for both the
+    Streamlit display and PDF generation.
+    """
+    niche_data   = get_niche_patterns(biz_type)
+    niche_label  = niche_data["niche_label"]
+    patterns     = niche_data["patterns"]
+    body_lower   = body_text.lower()
+    html_signals = {
+        # Authority / credentials
+        "has_credentials":       any(w in body_lower for w in ["certified", "certification", "credential", "licensed", "degree", "crc", "lvw", "clcp"]),
+        "has_report_count":      any(w in body_lower for w in ["reports completed", "cases", "evaluations completed", "over 1,000", "hundreds of"]),
+        "has_expert_history":    any(w in body_lower for w in ["expert witness", "testified", "deposition", "bva", "board of veterans"]),
+        # Attorney / referral
+        "has_attorney_page":     any(w in body_lower for w in ["for attorneys", "attorney referral", "referring attorney", "va attorney"]),
+        "has_sample_report":     any(w in body_lower for w in ["sample report", "example report", "download", "pdf"]),
+        "has_attorney_cta":      any(w in body_lower for w in ["attorney portal", "for counsel", "attorney contact"]),
+        # Lead capture
+        "has_eligibility_checker": any(w in body_lower for w in ["eligibility", "qualify", "check if", "am i eligible"]),
+        "has_downloadable_guide":  any(w in body_lower for w in ["download", "guide", "ebook", "free resource"]),
+        "has_email_capture":       any(w in body_lower for w in ["subscribe", "newsletter", "email", "sign up"]),
+        # Outcomes / proof
+        "has_case_outcomes":     any(w in body_lower for w in ["outcome", "result", "awarded", "approved", "rating granted", "case result"]),
+        "has_anonymized_results":any(w in body_lower for w in ["anonymized", "recent outcome", "client outcome"]),
+        # Pricing / contact
+        "has_pricing":           page.get("has_pricing", False),
+        "has_phone":             page.get("has_phone", False),
+        # Reviews
+        "has_reviews":           page.get("has_review_schema", False) or any(w in body_lower for w in ["review", "rating", "stars", "testimonial"]),
+        "has_testimonials":      any(w in body_lower for w in ["testimonial", "what our", "client said", "veteran said"]),
+        # Misc
+        "has_before_after":      any(w in body_lower for w in ["before", "after", "transformation", "result"]),
+        "has_gallery":           any(w in body_lower for w in ["gallery", "photos", "portfolio"]),
+        "has_free_trial":        any(w in body_lower for w in ["free trial", "try for free", "first class free"]),
+        "has_html_menu":         any(w in body_lower for w in ["menu", "appetizer", "entree", "dessert"]),
+        "has_reservation_cta":   any(w in body_lower for w in ["reserve", "reservation", "book a table"]),
+        "has_fiduciary_statement": any(w in body_lower for w in ["fiduciary", "fee-only", "fee only", "registered investment"]),
+    }
+
+    # Build opportunity cards with detected/missing signal pills
+    opportunity_cards = []
+    for pattern in patterns:
+        signals = []
+        for signal_key in pattern.get("signals_check", []):
+            detected = html_signals.get(signal_key, False)
+            label    = signal_key.replace("has_", "").replace("_", " ").title()
+            signals.append({"label": label, "detected": detected})
+
+        # Determine if this opportunity is still relevant
+        # (if ALL signals are detected, the opportunity may already be addressed)
+        all_detected = all(s["detected"] for s in signals) if signals else False
+
+        opportunity_cards.append({
+            "title":          pattern["title"],
+            "impact":         pattern["impact"],
+            "detected_by":    pattern["detected_by"],
+            "description":    pattern["description"],
+            "signals":        signals,
+            "recommendation": pattern["recommendation"],
+            "already_present": all_detected,
+        })
+
+    # Filter out patterns where all signals are already detected
+    # Keep them but mark them so the display can de-emphasize or skip
+    active_cards = [c for c in opportunity_cards if not c["already_present"]]
+
+    return {
+        "niche_label":         niche_label,
+        "biz_type":            biz_type,
+        "opportunity_cards":   active_cards if active_cards else opportunity_cards,
+        "competitor_count":    len(competitors),
+        "scope_note": (
+            "Strategic Opportunities are pattern-detected signals, not audited deficiencies. "
+            "AuditAI identifies these based on niche classification and competitor analysis — "
+            "but cannot determine whether a recommendation fits your operational model, client "
+            "agreements, or compliance requirements. All items in this section require human review before acting."
+        ),
+    }
 
 import json
 import re
@@ -1010,6 +1533,15 @@ OTHER RULES:
     for key in audit_json.get("scores", {}):
         s = audit_json["scores"][key].get("score", 60)
         audit_json["scores"][key]["grade"] = score_to_grade(s)
+
+    # ── 8. Generate Section 6: Strategic Opportunities ───────
+    update("Generating strategic opportunities...")
+    audit_json["strategic_opportunities"] = generate_strategic_opportunities(
+        page        = page,
+        biz_type    = biz_type,
+        competitors = verified_competitors,
+        body_text   = page.get("body_text", ""),
+    )
 
     update("Audit complete!")
     return audit_json
