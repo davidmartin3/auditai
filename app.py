@@ -136,7 +136,7 @@ if not st.session_state.api_key:
 # ════════════════════════════════════════════════════════════════
 st.markdown('<p class="eyebrow">AI Marketing Intelligence Platform</p>', unsafe_allow_html=True)
 st.markdown('<h1 class="hero-title">Context-Driven<br><em>Growth Patterns.</em></h1>', unsafe_allow_html=True)
-st.markdown('<p class="hero-sub">Paste any URL. Five AI agents audit the site in real time — delivering competitive analysis, SEO teardowns, and a client-ready PDF report.</p>', unsafe_allow_html=True)
+st.markdown('<p class="hero-sub">Beyond technical findings, AuditAI detects niche-specific patterns that signal high-leverage opportunities — delivering competitive analysis, SEO teardowns, and a client-ready PDF report.</p>', unsafe_allow_html=True)
 st.markdown("---")
 
 
