@@ -324,6 +324,7 @@ def page_cover(data, styles):
     story.append(HRFlowable(width="100%", thickness=2, color=INK, spaceAfter=8))
 
     # ── Header strip: AuditAI | domain · date · confidential | section ──
+    # Total content width = 8.5 - 0.65 - 0.65 = 7.2 inches
     header_strip = Table([[
         Paragraph("<b>AUDITAI</b>", ParagraphStyle(
             "cvbrand", fontName="Helvetica-Bold", fontSize=9,
@@ -340,7 +341,7 @@ def page_cover(data, styles):
             "cvsec", fontName="Helvetica", fontSize=8,
             textColor=MUTED, letterSpacing=1, alignment=TA_RIGHT,
         )),
-    ]], colWidths=[2.0 * inch, 4.5 * inch, 1.5 * inch])
+    ]], colWidths=[1.4 * inch, 4.4 * inch, 1.4 * inch])
     header_strip.setStyle(TableStyle([
         ("BACKGROUND",    (0, 0), (-1, -1), PAPER),
         ("TOPPADDING",    (0, 0), (-1, -1), 8),
@@ -375,7 +376,7 @@ def page_cover(data, styles):
             "oslbl2", fontName="Helvetica", fontSize=7.5,
             textColor=MUTED, letterSpacing=2,
         ))],
-    ], colWidths=[4.6 * inch])
+    ], colWidths=[4.9 * inch])
     right_inner.setStyle(TableStyle([
         ("TOPPADDING",    (0, 0), (-1, -1), 2),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
@@ -389,22 +390,22 @@ def page_cover(data, styles):
             textColor=grade_col, alignment=TA_CENTER, leading=88,
         )),
         right_inner,
-    ]], colWidths=[2.8 * inch, 4.6 * inch])
+    ]], colWidths=[2.3 * inch, 4.9 * inch])
     hero.setStyle(TableStyle([
-        ("BACKGROUND",    (0, 0), (-1, -1), PAPER),
-        ("TOPPADDING",    (0, 0), (-1, -1), 20),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 20),
+        ("BACKGROUND",    (0, 0), (-1, -1), CREAM),
+        ("TOPPADDING",    (0, 0), (-1, -1), 24),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 24),
         ("LEFTPADDING",   (0, 0), (0, -1),  0),
         ("RIGHTPADDING",  (0, 0), (0, -1),  0),
-        ("LEFTPADDING",   (1, 0), (1, -1),  28),
-        ("RIGHTPADDING",  (1, 0), (1, -1),  0),
+        ("LEFTPADDING",   (1, 0), (1, -1),  24),
+        ("RIGHTPADDING",  (1, 0), (1, -1),  16),
         ("VALIGN",        (0, 0), (-1, -1), "MIDDLE"),
         ("LINEAFTER",     (0, 0), (0, -1),  0.5, BORDER),
     ]))
     story.append(hero)
-    story.append(HRFlowable(width="100%", thickness=0.5, color=BORDER, spaceBefore=36, spaceAfter=24))
+    story.append(HRFlowable(width="100%", thickness=0.5, color=BORDER, spaceBefore=24, spaceAfter=20))
 
-    # ── Metadata strip: 4 cells ───────────────────────────────
+    # ── Metadata strip: 4 equal cells totalling 7.2 inches ───
     meta_labels = [
         Paragraph("DATE",        ParagraphStyle("ml2", fontName="Helvetica", fontSize=7, textColor=MUTED, letterSpacing=1.5, spaceAfter=3)),
         Paragraph("PREPARED BY", ParagraphStyle("ml2", fontName="Helvetica", fontSize=7, textColor=MUTED, letterSpacing=1.5, spaceAfter=3)),
@@ -419,7 +420,7 @@ def page_cover(data, styles):
     ]
     meta = Table(
         [meta_labels, meta_values],
-        colWidths=[1.875 * inch] * 4,
+        colWidths=[1.8 * inch] * 4,
     )
     meta.setStyle(TableStyle([
         ("BACKGROUND",    (0, 0), (-1, -1), CREAM),
