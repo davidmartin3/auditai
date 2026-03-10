@@ -320,27 +320,129 @@ def page_cover(data, styles):
     raw_name     = data.get("business_name", data["domain"])
     display_name = raw_name if len(raw_name) <= 32 else raw_name[:30] + "..."
 
-    # ── Top bar: AuditAI brand left, report type right ───────
-    top_bar = Table([[
-        Paragraph("AUDITAI", ParagraphStyle(
-            "brand", fontName="Helvetica-Bold", fontSize=9,
-            textColor=PAPER, letterSpacing=3,
+    # ── Top rule ──────────────────────────────────────────────
+    story.append(HRFlowable(width="100%", thickness=2, color=INK, spaceAfter=8))
+
+    # ── Header strip: AuditAI | domain · date · confidential | section ──
+    header_strip = Table([[
+        Paragraph("<b>AUDITAI</b>", ParagraphStyle(
+            "cvbrand", fontName="Helvetica-Bold", fontSize=9,
+            textColor=INK, letterSpacing=2,
         )),
-        Paragraph("MARKETING INTELLIGENCE REPORT", ParagraphStyle(
-            "tag", fontName="Helvetica", fontSize=8,
-            textColor=colors.HexColor("#888888"), letterSpacing=2,
-            alignment=TA_RIGHT,
+        Paragraph(
+            f"{data['domain'].upper()} · {data['audit_date'].upper()} · CONFIDENTIAL",
+            ParagraphStyle(
+                "cvmeta", fontName="Helvetica", fontSize=8,
+                textColor=MUTED, letterSpacing=1, alignment=TA_CENTER,
+            ),
+        ),
+        Paragraph("SECTION 1 OF 6", ParagraphStyle(
+            "cvsec", fontName="Helvetica", fontSize=8,
+            textColor=MUTED, letterSpacing=1, alignment=TA_RIGHT,
         )),
-    ]], colWidths=[3.5 * inch, 4.0 * inch])
-    top_bar.setStyle(TableStyle([
-        ("BACKGROUND",    (0, 0), (-1, -1), INK),
-        ("TOPPADDING",    (0, 0), (-1, -1), 14),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 14),
-        ("LEFTPADDING",   (0, 0), (-1, -1), 28),
-        ("RIGHTPADDING",  (0, 0), (-1, -1), 28),
+    ]], colWidths=[2.0 * inch, 4.5 * inch, 1.5 * inch])
+    header_strip.setStyle(TableStyle([
+        ("BACKGROUND",    (0, 0), (-1, -1), PAPER),
+        ("TOPPADDING",    (0, 0), (-1, -1), 8),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+        ("LEFTPADDING",   (0, 0), (-1, -1), 0),
+        ("RIGHTPADDING",  (0, 0), (-1, -1), 0),
         ("VALIGN",        (0, 0), (-1, -1), "MIDDLE"),
     ]))
-    story.append(top_bar)
+    story.append(header_strip)
+    story.append(HRFlowable(width="100%", thickness=0.5, color=BORDER, spaceAfter=48))
+
+    # ── Grade + Business name block (light theme) ─────────────
+    right_inner = Table([
+        [Paragraph("AUDIT SUBJECT", ParagraphStyle(
+            "aslbl2", fontName="Helvetica", fontSize=7.5,
+            textColor=MUTED, letterSpacing=2, spaceAfter=6,
+        ))],
+        [Paragraph(display_name, ParagraphStyle(
+            "bname2", fontName="Helvetica-Bold", fontSize=26,
+            textColor=INK, leading=30, spaceAfter=4,
+        ))],
+        [Paragraph(data["domain"], ParagraphStyle(
+            "dom2", fontName="Helvetica", fontSize=10,
+            textColor=MUTED, leading=14,
+        ))],
+        [Spacer(1, 20)],
+        [Paragraph(f"{data['overall_score']} / 100", ParagraphStyle(
+            "oscore2", fontName="Helvetica-Bold", fontSize=34,
+            textColor=grade_col, leading=38,
+        ))],
+        [Paragraph("OVERALL SCORE", ParagraphStyle(
+            "oslbl2", fontName="Helvetica", fontSize=7.5,
+            textColor=MUTED, letterSpacing=2,
+        ))],
+    ], colWidths=[4.6 * inch])
+    right_inner.setStyle(TableStyle([
+        ("TOPPADDING",    (0, 0), (-1, -1), 2),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+        ("LEFTPADDING",   (0, 0), (-1, -1), 0),
+        ("RIGHTPADDING",  (0, 0), (-1, -1), 0),
+    ]))
+
+    hero = Table([[
+        Paragraph(data["overall_grade"], ParagraphStyle(
+            "hgrade2", fontName="Helvetica-Bold", fontSize=80,
+            textColor=grade_col, alignment=TA_CENTER, leading=88,
+        )),
+        right_inner,
+    ]], colWidths=[2.8 * inch, 4.6 * inch])
+    hero.setStyle(TableStyle([
+        ("BACKGROUND",    (0, 0), (-1, -1), PAPER),
+        ("TOPPADDING",    (0, 0), (-1, -1), 20),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 20),
+        ("LEFTPADDING",   (0, 0), (0, -1),  0),
+        ("RIGHTPADDING",  (0, 0), (0, -1),  0),
+        ("LEFTPADDING",   (1, 0), (1, -1),  28),
+        ("RIGHTPADDING",  (1, 0), (1, -1),  0),
+        ("VALIGN",        (0, 0), (-1, -1), "MIDDLE"),
+        ("LINEAFTER",     (0, 0), (0, -1),  0.5, BORDER),
+    ]))
+    story.append(hero)
+    story.append(HRFlowable(width="100%", thickness=0.5, color=BORDER, spaceBefore=36, spaceAfter=24))
+
+    # ── Metadata strip: 4 cells ───────────────────────────────
+    meta_labels = [
+        Paragraph("DATE",        ParagraphStyle("ml2", fontName="Helvetica", fontSize=7, textColor=MUTED, letterSpacing=1.5, spaceAfter=3)),
+        Paragraph("PREPARED BY", ParagraphStyle("ml2", fontName="Helvetica", fontSize=7, textColor=MUTED, letterSpacing=1.5, spaceAfter=3)),
+        Paragraph("AGENTS",      ParagraphStyle("ml2", fontName="Helvetica", fontSize=7, textColor=MUTED, letterSpacing=1.5, spaceAfter=3)),
+        Paragraph("STATUS",      ParagraphStyle("ml2", fontName="Helvetica", fontSize=7, textColor=MUTED, letterSpacing=1.5, spaceAfter=3)),
+    ]
+    meta_values = [
+        Paragraph(data["audit_date"],       ParagraphStyle("mv2", fontName="Helvetica-Bold", fontSize=9, textColor=INK, leading=12)),
+        Paragraph("AuditAI",                ParagraphStyle("mv2", fontName="Helvetica-Bold", fontSize=9, textColor=INK, leading=12)),
+        Paragraph("6 Parallel Specialists", ParagraphStyle("mv2", fontName="Helvetica-Bold", fontSize=9, textColor=INK, leading=12)),
+        Paragraph("Confidential",           ParagraphStyle("mv2", fontName="Helvetica-Bold", fontSize=9, textColor=INK, leading=12)),
+    ]
+    meta = Table(
+        [meta_labels, meta_values],
+        colWidths=[1.875 * inch] * 4,
+    )
+    meta.setStyle(TableStyle([
+        ("BACKGROUND",    (0, 0), (-1, -1), CREAM),
+        ("TOPPADDING",    (0, 0), (-1, -1), 10),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+        ("LEFTPADDING",   (0, 0), (-1, -1), 16),
+        ("RIGHTPADDING",  (0, 0), (-1, -1), 16),
+        ("LINEAFTER",     (0, 0), (2, -1),  0.5, BORDER),
+        ("BOX",           (0, 0), (-1, -1), 0.5, BORDER),
+        ("VALIGN",        (0, 0), (-1, -1), "MIDDLE"),
+    ]))
+    story.append(meta)
+    story.append(Spacer(1, 0.4 * inch))
+
+    # ── Disclaimer ────────────────────────────────────────────
+    story.append(Paragraph(
+        "This report was generated by AuditAI using 6 parallel specialist agents. "
+        "Findings reflect a point-in-time analysis and should be reviewed alongside "
+        "live analytics data before implementation.",
+        styles["body_muted"],
+    ))
+    story.append(PageBreak())
+    return story
 
     # ── Hero: Grade left | Business details right ────────────
     right_inner = Table([
