@@ -313,98 +313,119 @@ def score_bar_table(label, score, grade, styles):
 
 def page_cover(data, styles):
     story = []
-    w, h = letter
 
     grade_col = GRADE_COLORS.get(data["overall_grade"], RUST)
 
-    # ── Top dark bar: AUDITAI eyebrow + grade ─────────────────
-    top_bar = Table(
-        [[
-            Paragraph("AUDITAI  ·  MARKETING AUDIT REPORT", ParagraphStyle(
-                "cb_eyebrow", fontName="Helvetica-Bold", fontSize=8,
-                textColor=colors.HexColor("#c84b2f"), letterSpacing=1.5,
-            )),
-            Paragraph(data["overall_grade"], ParagraphStyle(
-                "cg", fontName="Helvetica-Bold", fontSize=64,
-                textColor=grade_col, alignment=TA_RIGHT, leading=72,
-            )),
-        ]],
-        colWidths=[4.5 * inch, 2.5 * inch],
-    )
+    # Normalize business name to single clean line
+    raw_name     = data.get("business_name", data["domain"])
+    display_name = raw_name if len(raw_name) <= 32 else raw_name[:30] + "..."
+
+    # ── Top bar: AuditAI brand left, report type right ───────
+    top_bar = Table([[
+        Paragraph("AUDITAI", ParagraphStyle(
+            "brand", fontName="Helvetica-Bold", fontSize=9,
+            textColor=PAPER, letterSpacing=3,
+        )),
+        Paragraph("MARKETING INTELLIGENCE REPORT", ParagraphStyle(
+            "tag", fontName="Helvetica", fontSize=8,
+            textColor=colors.HexColor("#888888"), letterSpacing=2,
+            alignment=TA_RIGHT,
+        )),
+    ]], colWidths=[3.5 * inch, 4.0 * inch])
     top_bar.setStyle(TableStyle([
-        ("BACKGROUND",    (0,0), (-1,-1), INK),
-        ("TOPPADDING",    (0,0), (-1,-1), 28),
-        ("BOTTOMPADDING", (0,0), (-1,-1), 28),
-        ("LEFTPADDING",   (0,0), (-1,-1), 36),
-        ("RIGHTPADDING",  (0,0), (-1,-1), 36),
-        ("VALIGN",        (0,0), (-1,-1), "MIDDLE"),
+        ("BACKGROUND",    (0, 0), (-1, -1), INK),
+        ("TOPPADDING",    (0, 0), (-1, -1), 14),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 14),
+        ("LEFTPADDING",   (0, 0), (-1, -1), 28),
+        ("RIGHTPADDING",  (0, 0), (-1, -1), 28),
+        ("VALIGN",        (0, 0), (-1, -1), "MIDDLE"),
     ]))
     story.append(top_bar)
-    story.append(Spacer(1, 0.35 * inch))
 
-    # ── Context-Driven Growth Patterns headline ───────────────
-    story.append(Paragraph("STRATEGIC OPPORTUNITIES", ParagraphStyle(
-        "cover_eyebrow", fontName="Helvetica-Bold", fontSize=8,
-        textColor=RUST, letterSpacing=2, spaceBefore=0, spaceAfter=6,
-    )))
-    story.append(HRFlowable(width="100%", thickness=0.5, color=RUST, spaceAfter=10))
-    story.append(Paragraph("Context-Driven", ParagraphStyle(
-        "cover_h1", fontName="Helvetica-Bold", fontSize=38,
-        textColor=INK, leading=42, spaceBefore=0, spaceAfter=0,
-    )))
-    story.append(Paragraph("<i>Growth Patterns</i>", ParagraphStyle(
-        "cover_h1i", fontName="Helvetica-BoldOblique", fontSize=38,
-        textColor=RUST, leading=44, spaceBefore=0, spaceAfter=16,
-    )))
-    story.append(Paragraph(
-        "Beyond technical findings, AuditAI detects niche-specific patterns that signal "
-        "high-leverage opportunities. These are not audit deficiencies — they are strategic "
-        "gaps identified from your detected business context. Human review is required before acting.",
-        ParagraphStyle("cover_sub", fontName="Helvetica", fontSize=11,
-            textColor=colors.HexColor("#7a7060"), leading=16, spaceAfter=20),
-    ))
-
-    # ── Client / niche badge ──────────────────────────────────
-    badge = Table(
-        [[Paragraph(
-            f"● &nbsp; {data['business_name'].upper()}  &nbsp;·&nbsp;  {data['domain'].upper()}  &nbsp;·&nbsp;  {data['audit_date'].upper()}",
-            ParagraphStyle("badge", fontName="Helvetica-Bold", fontSize=8,
-                textColor=colors.white, letterSpacing=0.8),
-        )]],
-        colWidths=[7 * inch],
-    )
-    badge.setStyle(TableStyle([
-        ("BACKGROUND",    (0,0), (-1,-1), INK),
-        ("TOPPADDING",    (0,0), (-1,-1), 14),
-        ("BOTTOMPADDING", (0,0), (-1,-1), 14),
-        ("LEFTPADDING",   (0,0), (-1,-1), 20),
-        ("RIGHTPADDING",  (0,0), (-1,-1), 20),
+    # ── Hero: Grade left | Business details right ────────────
+    right_inner = Table([
+        [Paragraph("AUDIT SUBJECT", ParagraphStyle(
+            "aslbl", fontName="Helvetica", fontSize=7.5,
+            textColor=colors.HexColor("#888888"), letterSpacing=2, spaceAfter=4,
+        ))],
+        [Paragraph(display_name, ParagraphStyle(
+            "bname", fontName="Helvetica-Bold", fontSize=22,
+            textColor=PAPER, leading=26, spaceAfter=4,
+        ))],
+        [Paragraph(data["domain"], ParagraphStyle(
+            "dom", fontName="Helvetica", fontSize=10,
+            textColor=colors.HexColor("#aaaaaa"), leading=14,
+        ))],
+        [Spacer(1, 18)],
+        [Paragraph(f"{data['overall_score']} / 100", ParagraphStyle(
+            "oscore", fontName="Helvetica-Bold", fontSize=34,
+            textColor=grade_col, leading=38,
+        ))],
+        [Paragraph("OVERALL SCORE", ParagraphStyle(
+            "oslbl", fontName="Helvetica", fontSize=7.5,
+            textColor=colors.HexColor("#888888"), letterSpacing=2,
+        ))],
+    ], colWidths=[4.6 * inch])
+    right_inner.setStyle(TableStyle([
+        ("TOPPADDING",    (0, 0), (-1, -1), 2),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 2),
+        ("LEFTPADDING",   (0, 0), (-1, -1), 0),
+        ("RIGHTPADDING",  (0, 0), (-1, -1), 0),
     ]))
-    story.append(badge)
-    story.append(Spacer(1, 0.3 * inch))
 
-    # ── Metadata row ──────────────────────────────────────────
+    hero = Table([[
+        Paragraph(data["overall_grade"], ParagraphStyle(
+            "hgrade", fontName="Helvetica-Bold", fontSize=80,
+            textColor=grade_col, alignment=TA_CENTER, leading=88,
+        )),
+        right_inner,
+    ]], colWidths=[2.8 * inch, 4.6 * inch])
+    hero.setStyle(TableStyle([
+        ("BACKGROUND",    (0, 0), (-1, -1), INK),
+        ("TOPPADDING",    (0, 0), (-1, -1), 36),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 36),
+        ("LEFTPADDING",   (0, 0), (0, -1),  24),
+        ("RIGHTPADDING",  (0, 0), (0, -1),  0),
+        ("LEFTPADDING",   (1, 0), (1, -1),  28),
+        ("RIGHTPADDING",  (1, 0), (1, -1),  28),
+        ("VALIGN",        (0, 0), (-1, -1), "MIDDLE"),
+        ("LINEAFTER",     (0, 0), (0, -1),  0.5, colors.HexColor("#333333")),
+    ]))
+    story.append(hero)
+
+    # ── Metadata strip ────────────────────────────────────────
+    meta_labels = [
+        Paragraph("DATE",        ParagraphStyle("ml", fontName="Helvetica", fontSize=7, textColor=colors.HexColor("#888888"), letterSpacing=1.5, spaceAfter=3)),
+        Paragraph("PREPARED BY", ParagraphStyle("ml", fontName="Helvetica", fontSize=7, textColor=colors.HexColor("#888888"), letterSpacing=1.5, spaceAfter=3)),
+        Paragraph("AGENTS",      ParagraphStyle("ml", fontName="Helvetica", fontSize=7, textColor=colors.HexColor("#888888"), letterSpacing=1.5, spaceAfter=3)),
+        Paragraph("STATUS",      ParagraphStyle("ml", fontName="Helvetica", fontSize=7, textColor=colors.HexColor("#888888"), letterSpacing=1.5, spaceAfter=3)),
+    ]
+    meta_values = [
+        Paragraph(data["audit_date"],       ParagraphStyle("mv", fontName="Helvetica-Bold", fontSize=9, textColor=INK, leading=12)),
+        Paragraph("AuditAI",                ParagraphStyle("mv", fontName="Helvetica-Bold", fontSize=9, textColor=INK, leading=12)),
+        Paragraph("6 Parallel Specialists", ParagraphStyle("mv", fontName="Helvetica-Bold", fontSize=9, textColor=INK, leading=12)),
+        Paragraph("Confidential",           ParagraphStyle("mv", fontName="Helvetica-Bold", fontSize=9, textColor=INK, leading=12)),
+    ]
     meta = Table(
-        [[
-            Paragraph(f"Domain: <b>{data['domain']}</b>", styles["body"]),
-            Paragraph(f"Date: <b>{data['audit_date']}</b>", styles["body"]),
-            Paragraph(f"Overall Score: <b>{data['overall_score']}/100</b>", styles["body"]),
-        ]],
-        colWidths=[2.5 * inch, 2.5 * inch, 2.5 * inch],
+        [meta_labels, meta_values],
+        colWidths=[1.875 * inch] * 4,
     )
     meta.setStyle(TableStyle([
-        ("BACKGROUND",    (0,0), (-1,-1), CREAM),
-        ("TOPPADDING",    (0,0), (-1,-1), 12),
-        ("BOTTOMPADDING", (0,0), (-1,-1), 12),
-        ("LEFTPADDING",   (0,0), (-1,-1), 16),
-        ("BOX",           (0,0), (-1,-1), 0.5, BORDER),
-        ("LINEAFTER",     (0,0), (1,0),   0.5, BORDER),
+        ("BACKGROUND",    (0, 0), (-1, -1), CREAM),
+        ("TOPPADDING",    (0, 0), (-1, -1), 10),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 10),
+        ("LEFTPADDING",   (0, 0), (-1, -1), 16),
+        ("RIGHTPADDING",  (0, 0), (-1, -1), 16),
+        ("LINEAFTER",     (0, 0), (2, -1),  0.5, BORDER),
+        ("BOX",           (0, 0), (-1, -1), 0.5, BORDER),
+        ("VALIGN",        (0, 0), (-1, -1), "MIDDLE"),
     ]))
     story.append(meta)
     story.append(Spacer(1, 0.4 * inch))
 
+    # ── Disclaimer ────────────────────────────────────────────
     story.append(Paragraph(
-        "This report was generated by AuditAI using 5 parallel specialist agents. "
+        "This report was generated by AuditAI using 6 parallel specialist agents. "
         "Findings reflect a point-in-time analysis and should be reviewed alongside "
         "live analytics data before implementation.",
         styles["body_muted"],
